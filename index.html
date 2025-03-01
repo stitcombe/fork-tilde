@@ -3,25 +3,35 @@
 <link
   rel="apple-touch-icon"
   sizes="180x180"
-  href="/assets/apple-touch-icon.png"
+  href="assets/apple-touch-icon.png"
 />
 <link
   rel="icon"
   type="image/png"
   sizes="32x32"
-  href="/assets/favicon-32x32.png"
+  href="assets/favicon-32x32.png"
 />
 <link
   rel="icon"
   type="image/png"
   sizes="16x16"
-  href="/assets/favicon-16x16.png"
+  href="assets/favicon-16x16.png"
 />
-<link rel="manifest" href="/assets/site.webmanifest" />
-<link rel="mask-icon" href="/assets/safari-pinned-tab.svg" color="#000000" />
+<link rel="manifest" href="assets/site.webmanifest" />
+<link rel="mask-icon" href="assets/safari-pinned-tab.svg" color="#000000" />
 <meta name="msapplication-TileColor" content="#2d89ef" />
 <meta name="color-scheme" content="dark light" />
 <meta name="theme-color" content="dark light" />
+<meta
+  name="theme-color"
+  media="(prefers-color-scheme: light)"
+  content="#e8e8e8"
+/>
+<meta
+  name="theme-color"
+  media="(prefers-color-scheme: dark)"
+  content="#000000"
+/>
 <meta name="robots" content="noindex" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>in.l00n</title>
@@ -50,8 +60,20 @@
     --transition-speed: 200ms;
   }
 
+  :root.light-theme {
+    --color-background: #e8e8e8;
+    --color-text-subtle: #606060;
+    --color-text: #111;
+  }
+
+  :root.dark-theme {
+    --color-background: #000;
+    --color-text-subtle: #888;
+    --color-text: #ccc;
+  }
+
   @media (prefers-color-scheme: light) {
-    :root {
+    :root:not(.dark-theme):not(.light-theme) {
       --color-background: #e8e8e8;
       --color-text-subtle: #606060;
       --color-text: #111;
@@ -566,5 +588,386 @@
   }
 </style>
 
+<site-logo-component></site-logo-component>
 <commands-component></commands-component>
 <search-component></search-component>
+<theme-selector-component></theme-selector-component>
+
+<template id="site-logo-template">
+  <style>
+    .site-logo-container {
+      position: fixed;
+      top: 1rem;
+      left: 1rem;
+      padding: 0.5rem 0 0 0.5rem;
+      z-index: 10;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .site-logo {
+      width: 1rem;
+      height: 1rem;
+      opacity: 1;
+      transition: opacity var(--transition-speed);
+    }
+
+    .site-logo:hover {
+      opacity: 1;
+    }
+
+    .site-logo svg {
+      width: 100%;
+      height: 100%;
+      color: var(--color-text);
+    }
+
+    .site-logo .star {
+      fill: #ff0000;
+    }
+
+    .site-text {
+      color: var(--color-text);
+      font-family: var(--font-family);
+      /* font-weight: bold; */
+      font-size: 0.8rem;
+      margin-left: 0.5rem;
+      transform: translateX(calc(-100% + 1rem));
+      opacity: 0;
+      transition: transform var(--transition-speed),
+        opacity var(--transition-speed);
+      white-space: nowrap;
+    }
+
+    .site-logo-container:hover .site-text {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  </style>
+  <div class="site-logo-container">
+    <div class="site-logo">
+      <svg viewBox="0 0 42 45" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <g clip-path="url(#clip0_3_35)">
+          <path
+            fill-rule="evenodd"
+            clip-rule="evenodd"
+            d="M9.48261 14.5943L0 24.1745V35.403L7.94916 42.217H42V42.2014L22.2337 21.105L42 0.00861328V0H4.31841L9.48261 14.5943Z"
+            fill="currentColor"
+          />
+          <path
+            class="star"
+            d="M20.2312 10.9213L19.6145 8.75087L18.0043 10.3313L18.5554 8.14337L16.3707 8.70692L17.9419 7.0877L15.7681 6.48335L17.9384 5.86672L16.3581 4.25643L18.5459 4.80758L17.9824 2.62282L19.6016 4.1941L20.206 2.02026L20.8226 4.19065L22.4328 2.61022L21.8817 4.79814L24.0665 4.2346L22.4952 5.85381L24.669 6.45815L22.4987 7.0748L24.0791 8.68509L21.8911 8.13393L22.4547 10.3187L20.8355 8.74741L20.2312 10.9213Z"
+          />
+        </g>
+        <defs>
+          <clipPath id="clip0_3_35">
+            <rect width="42" height="42.315" fill="white" />
+          </clipPath>
+        </defs>
+      </svg>
+    </div>
+    <div class="site-text">in.l00n</div>
+  </div>
+</template>
+
+<script type="module">
+  class SiteLogo extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({ mode: 'open' });
+      const template = document.getElementById('site-logo-template');
+      const clone = template.content.cloneNode(true);
+      this.shadowRoot.append(clone);
+    }
+  }
+
+  customElements.define('site-logo-component', SiteLogo);
+</script>
+
+<template id="theme-selector-template">
+  <style>
+    .theme-selector {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 10;
+      font-family: var(--font-family);
+    }
+
+    .theme-button {
+      background: transparent;
+      border: none;
+      color: var(--color-text);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-family);
+      padding: 0.5rem;
+      position: relative;
+      transition: color var(--transition-speed);
+    }
+
+    .theme-button:hover {
+      color: var(--color-text-subtle);
+    }
+
+    .theme-options {
+      background-color: var(--color-background);
+      border: 1px solid var(--color-text-subtle);
+      border-radius: 0.25rem;
+      display: none;
+      list-style: none;
+      margin: 0;
+      padding: 0.5rem;
+      position: absolute;
+      right: 0;
+      top: 100%;
+    }
+
+    .theme-options.show {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .theme-option {
+      color: var(--color-text);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.5rem;
+      border-radius: 0.25rem;
+      transition: all var(--transition-speed);
+      width: 1rem;
+      height: 1rem;
+    }
+
+    .theme-option:hover {
+      background-color: var(--color-text-subtle);
+      color: var(--color-background);
+    }
+
+    .theme-option.active {
+      background-color: var(--color-text-subtle);
+      color: var(--color-background);
+    }
+
+    svg {
+      width: 1rem;
+      height: 1rem;
+    }
+  </style>
+  <div class="theme-selector">
+    <button class="theme-button">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="theme-icon"
+      >
+        <!-- Default icon (will be replaced dynamically) -->
+        <circle cx="12" cy="12" r="4"></circle>
+        <path d="M12 2v2"></path>
+        <path d="M12 20v2"></path>
+        <path d="M4.93 4.93l1.41 1.41"></path>
+        <path d="M17.66 17.66l1.41 1.41"></path>
+        <path d="M2 12h2"></path>
+        <path d="M20 12h2"></path>
+        <path d="M6.34 17.66l-1.41 1.41"></path>
+        <path d="M19.07 4.93l-1.41 1.41"></path>
+      </svg>
+    </button>
+    <ul class="theme-options">
+      <li class="theme-option" data-theme="light" title="Light Theme">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <!-- Sun icon -->
+          <circle cx="12" cy="12" r="4"></circle>
+          <path d="M12 2v2"></path>
+          <path d="M12 20v2"></path>
+          <path d="M4.93 4.93l1.41 1.41"></path>
+          <path d="M17.66 17.66l1.41 1.41"></path>
+          <path d="M2 12h2"></path>
+          <path d="M20 12h2"></path>
+          <path d="M6.34 17.66l-1.41 1.41"></path>
+          <path d="M19.07 4.93l-1.41 1.41"></path>
+        </svg>
+      </li>
+      <li class="theme-option" data-theme="dark" title="Dark Theme">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <!-- Moon icon -->
+          <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+        </svg>
+      </li>
+      <li class="theme-option" data-theme="system" title="System Theme">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <!-- Monitor icon -->
+          <rect width="20" height="14" x="2" y="3" rx="2"></rect>
+          <line x1="8" x2="16" y1="21" y2="21"></line>
+          <line x1="12" x2="12" y1="17" y2="21"></line>
+        </svg>
+      </li>
+    </ul>
+  </div>
+</template>
+
+<script type="module">
+  class ThemeSelector extends HTMLElement {
+    #button;
+    #options;
+    #currentTheme;
+
+    constructor() {
+      super();
+      this.attachShadow({ mode: 'open' });
+      const template = document.getElementById('theme-selector-template');
+      const clone = template.content.cloneNode(true);
+      this.#button = clone.querySelector('.theme-button');
+      this.#options = clone.querySelector('.theme-options');
+
+      // Set up event listeners
+      this.#button.addEventListener('click', this.#toggleOptions);
+      this.#options.addEventListener('click', this.#onOptionClick);
+      document.addEventListener('click', this.#onDocumentClick);
+
+      // Initialize theme from localStorage or default to system
+      this.#currentTheme = localStorage.getItem('theme') || 'system';
+      this.#applyTheme(this.#currentTheme);
+      this.#updateActiveOption();
+
+      this.shadowRoot.append(clone);
+    }
+
+    #toggleOptions = (e) => {
+      e.stopPropagation();
+      this.#options.classList.toggle('show');
+    };
+
+    #onOptionClick = (e) => {
+      const option = e.target.closest('.theme-option');
+      if (!option) return;
+
+      const theme = option.dataset.theme;
+      this.#currentTheme = theme;
+      localStorage.setItem('theme', theme);
+
+      this.#applyTheme(theme);
+      this.#updateActiveOption();
+      this.#options.classList.remove('show');
+    };
+
+    #onDocumentClick = (e) => {
+      if (!this.shadowRoot.contains(e.target)) {
+        this.#options.classList.remove('show');
+      }
+    };
+
+    #applyTheme = (theme) => {
+      const root = document.documentElement;
+
+      // Remove any existing theme classes
+      root.classList.remove('light-theme', 'dark-theme');
+
+      // Apply the selected theme
+      if (theme === 'light') {
+        root.classList.add('light-theme');
+      } else if (theme === 'dark') {
+        root.classList.add('dark-theme');
+      }
+
+      // Update the button icon to show current theme
+      const buttonIcon = this.#button.querySelector('.theme-icon');
+      buttonIcon.innerHTML = '';
+
+      if (theme === 'light') {
+        // Sun icon
+        buttonIcon.innerHTML = `
+          <circle cx="12" cy="12" r="4"></circle>
+          <path d="M12 2v2"></path>
+          <path d="M12 20v2"></path>
+          <path d="M4.93 4.93l1.41 1.41"></path>
+          <path d="M17.66 17.66l1.41 1.41"></path>
+          <path d="M2 12h2"></path>
+          <path d="M20 12h2"></path>
+          <path d="M6.34 17.66l-1.41 1.41"></path>
+          <path d="M19.07 4.93l-1.41 1.41"></path>
+        `;
+      } else if (theme === 'dark') {
+        // Moon icon
+        buttonIcon.innerHTML = `
+          <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+        `;
+      } else {
+        // System/Monitor icon
+        buttonIcon.innerHTML = `
+          <rect width="20" height="14" x="2" y="3" rx="2"></rect>
+          <line x1="8" x2="16" y1="21" y2="21"></line>
+          <line x1="12" x2="12" y1="17" y2="21"></line>
+        `;
+      }
+    };
+
+    #updateActiveOption = () => {
+      const options = this.#options.querySelectorAll('.theme-option');
+      options.forEach((option) => {
+        if (option.dataset.theme === this.#currentTheme) {
+          option.classList.add('active');
+        } else {
+          option.classList.remove('active');
+        }
+      });
+    };
+  }
+
+  customElements.define('theme-selector-component', ThemeSelector);
+
+  // Apply saved theme on page load
+  const savedTheme = localStorage.getItem('theme');
+  if (savedTheme) {
+    const root = document.documentElement;
+    if (savedTheme === 'light') {
+      root.classList.add('light-theme');
+    } else if (savedTheme === 'dark') {
+      root.classList.add('dark-theme');
+    }
+  }
+</script>
